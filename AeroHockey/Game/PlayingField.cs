@@ -9,10 +9,10 @@ public class PlayingField
     public uint Height = 400;
     
     private uint BallRadius = 10;
-    private uint BallSpeed = 6;
+    private uint BallSpeed = 4;
 
-    private float TopGateBorder;
-    private float BottomGateBorder;
+    public float TopGateBorder = 125;
+    public float BottomGateBorder = 275;
     
     public CircleShape Ball { get; set; }
     public Vector2f BallMoveDirection { get; set; } = new Vector2f(1, .7f);
@@ -22,6 +22,11 @@ public class PlayingField
     private int RacketWidth = 10;
     private int RacketHeight = 100;
     private int RacketSpeed = 5;
+
+    private RectangleShape topLeftGateBorder;
+    private RectangleShape bottomLeftGateBorder;
+    private RectangleShape topRightGateBorder;
+    private RectangleShape bottomRightGateBorder;
 
     public List<Shape> ShapesToDisplay;
 
@@ -34,9 +39,33 @@ public class PlayingField
 
     public void Initialize()
     {
+        InitializeGates();
+        
         InitializeBall();
 
         InitializeRackets();
+    }
+
+    private void InitializeGates()
+    {
+        InitGateBorder(ref topLeftGateBorder);
+        InitGateBorder(ref bottomLeftGateBorder);
+        InitGateBorder(ref topRightGateBorder);
+        InitGateBorder(ref bottomRightGateBorder);
+        
+        topLeftGateBorder.Position = new Vector2f(0, TopGateBorder);
+        bottomLeftGateBorder.Position = new Vector2f(0, BottomGateBorder);
+        topRightGateBorder.Position = new Vector2f(Width, TopGateBorder);
+        bottomRightGateBorder.Position = new Vector2f(Width, BottomGateBorder);
+    }
+
+    private void InitGateBorder(ref RectangleShape border)
+    {
+        border = new RectangleShape(new Vector2f(10, 6));
+        border.Origin = new Vector2f(5, 3);
+        border.FillColor = new Color(120, 120, 120);
+        
+        ShapesToDisplay.Add(border);
     }
 
     private void InitializeBall()
@@ -46,8 +75,8 @@ public class PlayingField
         Ball.Position = new Vector2f(Width / 2, Height / 2);
         Ball.FillColor = new Color(200, 200, 200);
 
-        BallMoveDirection = new Vector2f(.205f, .6f);
-        //BallMoveDirection = new Vector2f(GetRandomFloat(), GetRandomFloat());
+        //BallMoveDirection = new Vector2f(.205f, .6f);
+        BallMoveDirection = new Vector2f(GetRandomFloat(), GetRandomFloat());
         
         ShapesToDisplay.Add(Ball);
     }

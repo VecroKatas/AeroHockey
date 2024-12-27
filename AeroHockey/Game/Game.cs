@@ -5,15 +5,24 @@ using SFML.Window;
 
 namespace AeroHockey.Game;
 
-
-
 public class Game
 {
     private PlayingField _playingField;
     private RenderWindow _renderWindow;
 
+    private Text leftScoreText;
+    private Text rightScoreText;
+    private Font textFont;
+    private string fontPath = "D:\\Homeworks\\GameDev\\AeroHockey\\AeroHockey\\ARIAL.TTF";
+
     private float rightRacketMoveDirection = 0;
     private float leftRacketMoveDirection = 0;
+
+    private int leftScore = 0;
+    private int rightScore = 0;
+
+    private bool leftJustScored = false;
+    private bool rightJustScored = false;
     
     public Game()
     {
@@ -33,6 +42,21 @@ public class Game
 
         _renderWindow = new RenderWindow(new VideoMode(_playingField.Width, _playingField.Height), "AeroHockey");
         _renderWindow.Closed += WindowClosed;
+        
+        textFont = new Font(fontPath);
+
+        InitText(ref leftScoreText);
+        InitText(ref rightScoreText);
+
+        leftScoreText.Position = new Vector2f(25, 20);
+        rightScoreText.Position = new Vector2f(_playingField.Width - 10, 20);
+    }
+
+    private void InitText(ref Text text)
+    {
+        text = new Text(leftScore.ToString(), textFont, 30);
+        text.FillColor = new Color(120, 120, 120);
+        text.Origin = new Vector2f(15, 15);
     }
 
     private void GameLoop()
@@ -103,16 +127,56 @@ public class Game
         RectangleShape leftRacket = _playingField.LeftRacket;
         RectangleShape rightRacket = _playingField.RightRacket;
 
-        if (ballPosition.X - ball.Radius < 0 || ballPosition.X + ball.Radius > _playingField.Width) // Left Right borders
-            direction.X = -direction.X;
-        
-        if (ballPosition.Y - ball.Radius < 0 || ballPosition.Y + ball.Radius > _playingField.Height) // Top Bottom borders
-            direction.Y = -direction.Y;
+        bool scoredGoal = HandleGateCollisions(ball);
 
-        direction = HandleRacketCollision(leftRacket, ball, direction);
-        direction = HandleRacketCollision(rightRacket, ball, direction);
+        if (!scoredGoal)
+        {
+            if (IsLeftBorderCollision(ball) || IsRightBorderCollision(ball)) // Left Right borders
+                direction.X = -direction.X;
 
-        _playingField.BallMoveDirection = direction;
+            if (ballPosition.Y - ball.Radius < 0 || ballPosition.Y + ball.Radius > _playingField.Height) // Top Bottom borders
+                direction.Y = -direction.Y;
+
+            direction = HandleRacketCollision(leftRacket, ball, direction);
+            direction = HandleRacketCollision(rightRacket, ball, direction);
+
+            _playingField.BallMoveDirection = direction;
+        }
+    }
+
+    private bool HandleGateCollisions(CircleShape ball)
+    {
+        if (IsWithinGateHeight(ball))
+        {
+            if (IsLeftBorderCollision(ball))
+            {
+                rightJustScored = true;
+                return true;
+            }
+            
+            if (IsRightBorderCollision(ball))
+            {
+                leftJustScored = true;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool IsLeftBorderCollision(CircleShape ball)
+    {
+        return ball.Position.X - ball.Radius < 0;
+    }
+    
+    private bool IsRightBorderCollision(CircleShape ball)
+    {
+        return ball.Position.X + ball.Radius > _playingField.Width;
+    }
+
+    private bool IsWithinGateHeight(CircleShape ball)
+    {
+        return ball.Position.Y > _playingField.TopGateBorder && ball.Position.Y < _playingField.BottomGateBorder;
     }
 
     private Vector2f HandleRacketCollision(RectangleShape racket, CircleShape ball, Vector2f direction)
@@ -146,7 +210,29 @@ public class Game
 
     private void Logic()
     {
+        if (leftJustScored)
+        {
+            leftScore++;
+            leftJustScored = false;
+            leftScoreText.DisplayedString = leftScore.ToString();
+
+            ResetField();
+        }
         
+        if (rightJustScored)
+        {
+            rightScore++;
+            rightJustScored = false;
+            rightScoreText.DisplayedString = rightScore.ToString();
+
+            ResetField();
+        }
+    }
+
+    private void ResetField()
+    {
+        _playingField = new PlayingField();
+        _playingField.Initialize();
     }
 
     private void Output()
@@ -157,6 +243,9 @@ public class Game
         {
             _renderWindow.Draw(shape);
         }
+        
+        _renderWindow.Draw(leftScoreText);
+        _renderWindow.Draw(rightScoreText);
         
         _renderWindow.Display();
         
