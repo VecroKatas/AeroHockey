@@ -13,7 +13,8 @@ public class Game
     private Text leftScoreText;
     private Text rightScoreText;
     private Font textFont;
-    private string fontPath = "D:\\Homeworks\\GameDev\\AeroHockey\\AeroHockey\\ARIAL.TTF";
+    private string solutionPath;
+    private string localFontPath = "\\Fonts\\ARIAL.TTF";
 
     private float rightRacketMoveDirection = 0;
     private float leftRacketMoveDirection = 0;
@@ -38,12 +39,14 @@ public class Game
 
     private void Initialization()
     {
+        solutionPath = GetSolutionPath();
+        
         _playingField.Initialize();
 
         _renderWindow = new RenderWindow(new VideoMode(_playingField.Width, _playingField.Height), "AeroHockey");
         _renderWindow.Closed += WindowClosed;
         
-        textFont = new Font(fontPath);
+        textFont = new Font(solutionPath + localFontPath);
 
         InitText(ref leftScoreText);
         InitText(ref rightScoreText);
@@ -256,5 +259,22 @@ public class Game
     {
         RenderWindow w = (RenderWindow)sender;
         w.Close();
+    }
+    
+    static string? GetSolutionPath()
+    {
+        string? currentDirectory = Directory.GetCurrentDirectory();
+
+        while (!string.IsNullOrEmpty(currentDirectory))
+        {
+            if (Directory.GetFiles(currentDirectory, "*.sln").Length > 0)
+            {
+                return currentDirectory;
+            }
+
+            currentDirectory = Directory.GetParent(currentDirectory)?.FullName;
+        }
+
+        return null;
     }
 }

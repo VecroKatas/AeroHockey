@@ -5,23 +5,23 @@ namespace AeroHockey.Game;
 
 public class PlayingField
 {
-    public uint Width = 800;
-    public uint Height = 400;
+    public readonly uint Width = 800;
+    public readonly uint Height = 400;
     
     private uint BallRadius = 10;
-    private uint BallSpeed = 4;
+    private int BallSpeed = 4;
 
-    public float TopGateBorder = 125;
-    public float BottomGateBorder = 275;
+    public float TopGateBorder { get; private set; } = 125;
+    public float BottomGateBorder { get; private set; } = 275;
     
-    public CircleShape Ball { get; set; }
+    public CircleShape Ball { get; private set; }
     public Vector2f BallMoveDirection { get; set; } = new Vector2f(1, .7f);
     
-    public RectangleShape RightRacket { get; set; }
-    public RectangleShape LeftRacket { get; set; }
-    private int RacketWidth = 10;
-    private int RacketHeight = 100;
-    private int RacketSpeed = 5;
+    public RectangleShape RightRacket { get; private set; }
+    public RectangleShape LeftRacket { get; private set; }
+    private readonly int RacketWidth = 10;
+    private readonly int RacketHeight = 100;
+    private readonly int RacketSpeed = 5;
 
     private RectangleShape topLeftGateBorder;
     private RectangleShape bottomLeftGateBorder;
