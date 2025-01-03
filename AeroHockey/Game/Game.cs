@@ -8,16 +8,11 @@ namespace AeroHockey.Game;
 public class Game
 {
     private PlayingField _playingField;
-    private RenderWindow _renderWindow;
+    private Input _input;
+    private Output _output;
 
-    private Text leftScoreText;
-    private Text rightScoreText;
-    private Font textFont;
-    private string solutionPath;
-    private string localFontPath = "\\Fonts\\ARIAL.TTF";
-
-    private float rightRacketMoveDirection = 0;
-    private float leftRacketMoveDirection = 0;
+    private Vector2f rightRacketDirection = new Vector2f(0, 0);
+    private Vector2f leftRacketDirection = new Vector2f(0, 0);
 
     private int leftScore = 0;
     private int rightScore = 0;
@@ -25,9 +20,11 @@ public class Game
     private bool leftJustScored = false;
     private bool rightJustScored = false;
     
-    public Game()
+    public Game(RenderWindow renderWindow)
     {
         _playingField = new PlayingField();
+        _input = new Input(renderWindow);
+        _output = new Output(_playingField, renderWindow);
     }
 
     public void StartGame()
@@ -39,27 +36,11 @@ public class Game
 
     private void Initialization()
     {
-        solutionPath = GetSolutionPath();
-        
         _playingField.Initialize();
-
-        _renderWindow = new RenderWindow(new VideoMode(_playingField.Width, _playingField.Height), "AeroHockey");
-        _renderWindow.Closed += WindowClosed;
         
-        textFont = new Font(solutionPath + localFontPath);
-
-        InitText(ref leftScoreText);
-        InitText(ref rightScoreText);
-
-        leftScoreText.Position = new Vector2f(25, 20);
-        rightScoreText.Position = new Vector2f(_playingField.Width - 10, 20);
-    }
-
-    private void InitText(ref Text text)
-    {
-        text = new Text(leftScore.ToString(), textFont, 30);
-        text.FillColor = new Color(120, 120, 120);
-        text.Origin = new Vector2f(15, 15);
+        _output.Initialize();
+        
+        _input.Initialize();
     }
 
     private void GameLoop()
@@ -78,26 +59,15 @@ public class Game
 
     private bool GameRunning()
     {
-        return _renderWindow.IsOpen;
+        return _output.IsWindowOpen();
     }
 
     private void Input()
     {
-        _renderWindow.DispatchEvents();
-        
-        if (Keyboard.IsKeyPressed(Keyboard.Key.W))
-            leftRacketMoveDirection = -1;
-        else if (Keyboard.IsKeyPressed(Keyboard.Key.S))
-            leftRacketMoveDirection = 1;
-        else
-            leftRacketMoveDirection = 0;
-        
-        if (Keyboard.IsKeyPressed(Keyboard.Key.Up))
-            rightRacketMoveDirection = -1;
-        else if (Keyboard.IsKeyPressed(Keyboard.Key.Down))
-            rightRacketMoveDirection = 1;
-        else
-            rightRacketMoveDirection = 0;
+        _input.DispatchEvents();
+
+        leftRacketDirection = _input.GetLeftRacketDirection();
+        rightRacketDirection = _input.GetRightRacketDirection();
     }
 
     private void Physics()
@@ -111,8 +81,8 @@ public class Game
 
     private void MoveRackets()
     {
-        _playingField.MoveRacket(1, rightRacketMoveDirection);
-        _playingField.MoveRacket(2, leftRacketMoveDirection);
+        _playingField.MoveRacket(1, leftRacketDirection.X);
+        _playingField.MoveRacket(2, rightRacketDirection.X);
     }
 
     private void MoveBall()
@@ -137,7 +107,7 @@ public class Game
             if (IsLeftBorderCollision(ball) || IsRightBorderCollision(ball)) // Left Right borders
                 direction.X = -direction.X;
 
-            if (ballPosition.Y - ball.Radius < 0 || ballPosition.Y + ball.Radius > _playingField.Height) // Top Bottom borders
+            if (ballPosition.Y - ball.Radius < 0 || ballPosition.Y + ball.Radius > PlayingField.Height) // Top Bottom borders
                 direction.Y = -direction.Y;
 
             direction = HandleRacketCollision(leftRacket, ball, direction);
@@ -174,7 +144,7 @@ public class Game
     
     private bool IsRightBorderCollision(CircleShape ball)
     {
-        return ball.Position.X + ball.Radius > _playingField.Width;
+        return ball.Position.X + ball.Radius > PlayingField.Width;
     }
 
     private bool IsWithinGateHeight(CircleShape ball)
@@ -217,7 +187,6 @@ public class Game
         {
             leftScore++;
             leftJustScored = false;
-            leftScoreText.DisplayedString = leftScore.ToString();
 
             ResetField();
         }
@@ -226,7 +195,6 @@ public class Game
         {
             rightScore++;
             rightJustScored = false;
-            rightScoreText.DisplayedString = rightScore.ToString();
 
             ResetField();
         }
@@ -234,47 +202,13 @@ public class Game
 
     private void ResetField()
     {
-        _playingField = new PlayingField();
-        _playingField.Initialize();
+        //_playingField = new PlayingField();
+        _playingField.Reset();
     }
 
     private void Output()
     {
-        _renderWindow.Clear(new Color(20, 20, 20));
-
-        foreach (var shape in _playingField.ShapesToDisplay)
-        {
-            _renderWindow.Draw(shape);
-        }
-        
-        _renderWindow.Draw(leftScoreText);
-        _renderWindow.Draw(rightScoreText);
-        
-        _renderWindow.Display();
-        
-        Thread.Sleep(1);
-    }
-    
-    void WindowClosed(object sender, EventArgs e)
-    {
-        RenderWindow w = (RenderWindow)sender;
-        w.Close();
-    }
-    
-    static string? GetSolutionPath()
-    {
-        string? currentDirectory = Directory.GetCurrentDirectory();
-
-        while (!string.IsNullOrEmpty(currentDirectory))
-        {
-            if (Directory.GetFiles(currentDirectory, "*.sln").Length > 0)
-            {
-                return currentDirectory;
-            }
-
-            currentDirectory = Directory.GetParent(currentDirectory)?.FullName;
-        }
-
-        return null;
+        _output.UpdateScores(leftScore.ToString(), rightScore.ToString());
+        _output.Display();
     }
 }

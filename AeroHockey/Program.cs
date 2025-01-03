@@ -1,4 +1,4 @@
 ﻿using AeroHockey.Game;
 
-Game game = new Game();
-game.StartGame();
+Boot boot = new Boot();
+boot.StartGame();

@@ -5,8 +5,8 @@ namespace AeroHockey.Game;
 
 public class PlayingField
 {
-    public readonly uint Width = 800;
-    public readonly uint Height = 400;
+    public static readonly uint Width = 800;
+    public static readonly uint Height = 400;
     
     private uint BallRadius = 10;
     private int BallSpeed = 4;
@@ -46,6 +46,12 @@ public class PlayingField
         InitializeRackets();
     }
 
+    public void Reset()
+    {
+        ShapesToDisplay.Clear();
+        Initialize();
+    }
+
     private void InitializeGates()
     {
         InitGateBorder(ref topLeftGateBorder);
@@ -75,7 +81,6 @@ public class PlayingField
         Ball.Position = new Vector2f(Width / 2, Height / 2);
         Ball.FillColor = new Color(200, 200, 200);
 
-        //BallMoveDirection = new Vector2f(.205f, .6f);
         BallMoveDirection = new Vector2f(GetRandomFloat(), GetRandomFloat());
         
         ShapesToDisplay.Add(Ball);
@@ -114,13 +119,13 @@ public class PlayingField
     public void MoveRacket(int racketIndex, float direction)
     {
         float delta = direction * RacketSpeed;
-        if (racketIndex == 1 && IsRacketWithinBorders(RightRacket, direction))
-        {
-            RightRacket.Position += new Vector2f(0, delta);
-        }
-        else if (racketIndex == 2 && IsRacketWithinBorders(LeftRacket, direction))
+        if (racketIndex == 1 && IsRacketWithinBorders(LeftRacket, direction))
         {
             LeftRacket.Position += new Vector2f(0, delta);
+        }
+        else if (racketIndex == 2 && IsRacketWithinBorders(RightRacket, direction))
+        {
+            RightRacket.Position += new Vector2f(0, delta);
         }
     }
 
