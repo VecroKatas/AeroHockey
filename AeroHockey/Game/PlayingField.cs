@@ -9,19 +9,19 @@ public class PlayingField
     public static readonly uint Height = 400;
     
     private uint BallRadius = 10;
-    private int BallSpeed = 4;
+    private int BallSpeed = 5;
 
     public float TopGateBorder { get; private set; } = 125;
     public float BottomGateBorder { get; private set; } = 275;
     
     public CircleShape Ball { get; private set; }
-    public Vector2f BallMoveDirection { get; set; } = new Vector2f(1, .7f);
+    public Vector2f BallMoveDirection { get; set; }
     
     public RectangleShape RightRacket { get; private set; }
     public RectangleShape LeftRacket { get; private set; }
-    private readonly int RacketWidth = 10;
+    private readonly int RacketWidth = 15;
     private readonly int RacketHeight = 100;
-    private readonly int RacketSpeed = 5;
+    private readonly int RacketSpeed = 4;
 
     private RectangleShape topLeftGateBorder;
     private RectangleShape bottomLeftGateBorder;
@@ -32,13 +32,12 @@ public class PlayingField
 
     private Random _random = new Random();
 
-    public PlayingField()
-    {
-        ShapesToDisplay = new List<Shape>();
-    }
+    public PlayingField() { }
 
     public void Initialize()
     {
+        ShapesToDisplay = new List<Shape>();
+        
         InitializeGates();
         
         InitializeBall();
@@ -48,7 +47,6 @@ public class PlayingField
 
     public void Reset()
     {
-        ShapesToDisplay.Clear();
         Initialize();
     }
 
@@ -99,7 +97,7 @@ public class PlayingField
     private RectangleShape InitRacket(RectangleShape racket)
     {
         racket = new RectangleShape(new Vector2f(RacketWidth,RacketHeight));
-        racket.Origin = new Vector2f(5, 50);
+        racket.Origin = new Vector2f(RacketWidth / 2, RacketHeight / 2);
         racket.FillColor = new Color(160, 160, 160);
         
         ShapesToDisplay.Add(racket);
@@ -119,12 +117,15 @@ public class PlayingField
 
     public void MoveRacket(int racketIndex, float direction)
     {
+        if (direction == 0)
+            return;
+        
         float delta = direction * RacketSpeed;
-        if (racketIndex == 1 && IsRacketWithinBorders(LeftRacket, direction))
+        if (racketIndex == 1 && IsRacketWithinBorders(LeftRacket, delta))
         {
             LeftRacket.Position += new Vector2f(0, delta);
         }
-        else if (racketIndex == 2 && IsRacketWithinBorders(RightRacket, direction))
+        else if (racketIndex == 2 && IsRacketWithinBorders(RightRacket, delta))
         {
             RightRacket.Position += new Vector2f(0, delta);
         }

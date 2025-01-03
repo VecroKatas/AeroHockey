@@ -13,11 +13,6 @@ public class Input
         _renderWindow = renderWindow;
     }
 
-    public void Initialize()
-    {
-        
-    }
-
     public void DispatchEvents()
     {
         _renderWindow.DispatchEvents();

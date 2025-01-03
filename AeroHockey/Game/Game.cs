@@ -1,7 +1,5 @@
-﻿using System.ComponentModel;
-using SFML.Graphics;
+﻿using SFML.Graphics;
 using SFML.System;
-using SFML.Window;
 
 namespace AeroHockey.Game;
 
@@ -39,8 +37,6 @@ public class Game
         _playingField.Initialize();
         
         _output.Initialize();
-        
-        _input.Initialize();
     }
 
     private void GameLoop()
@@ -154,28 +150,19 @@ public class Game
 
     private Vector2f HandleRacketCollision(RectangleShape racket, CircleShape ball, Vector2f direction)
     {
-        // Horizontal collision
-        if (ball.Position.Y > racket.Position.Y - racket.Size.Y / 2 && ball.Position.Y < racket.Position.Y + racket.Size.Y / 2)
+        if (ball.Position.X > racket.Position.X - racket.Size.X / 2 && ball.Position.X < racket.Position.X + racket.Size.X / 2) // Vertical collision
         {
-            // Left collision
-            if (ball.Position.X - ball.Radius > racket.Position.X - racket.Size.X / 2 && ball.Position.X - ball.Radius < racket.Position.X + racket.Size.X / 2)
-                direction.X = -direction.X;
-            
-            // Right collision
-            if (ball.Position.X + ball.Radius > racket.Position.X - racket.Size.X / 2 && ball.Position.X + ball.Radius < racket.Position.X + racket.Size.X / 2)
-                direction.X = -direction.X;
-        }
-        
-        // Vertical collision
-        if (ball.Position.X > racket.Position.X - racket.Size.X / 2 && ball.Position.X < racket.Position.X + racket.Size.X / 2)
-        {
-            // Top collision
             if (ball.Position.Y + ball.Radius > racket.Position.Y - racket.Size.Y / 2 && ball.Position.Y + ball.Radius < racket.Position.Y + racket.Size.Y / 2)
-                direction.Y = -direction.Y;
-            
-            // Bottom collision
-            if (ball.Position.Y - ball.Radius > racket.Position.Y - racket.Size.Y / 2 && ball.Position.Y - ball.Radius < racket.Position.Y + racket.Size.Y / 2)
-                direction.Y = -direction.Y;
+                direction.Y = -MathF.Abs(direction.Y);     // Top collision
+            else if (ball.Position.Y - ball.Radius > racket.Position.Y - racket.Size.Y / 2 && ball.Position.Y - ball.Radius < racket.Position.Y + racket.Size.Y / 2)
+                direction.Y = MathF.Abs(direction.Y); // Bottom collision
+        }
+        else if (ball.Position.Y > racket.Position.Y - racket.Size.Y / 2 && ball.Position.Y < racket.Position.Y + racket.Size.Y / 2) // Horizontal collision
+        {
+            if (ball.Position.X - ball.Radius > racket.Position.X - racket.Size.X / 2 && ball.Position.X - ball.Radius < racket.Position.X + racket.Size.X / 2)
+                direction.X = MathF.Abs(direction.X);     // Left collision
+            else if (ball.Position.X + ball.Radius > racket.Position.X - racket.Size.X / 2 && ball.Position.X + ball.Radius < racket.Position.X + racket.Size.X / 2)
+                direction.X = -MathF.Abs(direction.X); // Right collision
         }
 
         return direction;
