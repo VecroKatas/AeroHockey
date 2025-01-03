@@ -59,8 +59,6 @@ public class Output
         _renderWindow.Draw(rightScoreText);
         
         _renderWindow.Display();
-        
-        Thread.Sleep(1);
     }
 
     public void UpdateScores(string leftScore, string rightScore)

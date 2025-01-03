@@ -7,9 +7,6 @@ public class PlayingField
 {
     public static readonly uint Width = 800;
     public static readonly uint Height = 400;
-    
-    private uint BallRadius = 10;
-    private int BallSpeed = 5;
 
     public float TopGateBorder { get; private set; } = 125;
     public float BottomGateBorder { get; private set; } = 275;
@@ -19,9 +16,13 @@ public class PlayingField
     
     public RectangleShape RightRacket { get; private set; }
     public RectangleShape LeftRacket { get; private set; }
+    
+    private uint BallRadius = 10;
+    private int BallSpeed = 400; //pixels per second
+    
     private readonly int RacketWidth = 15;
     private readonly int RacketHeight = 100;
-    private readonly int RacketSpeed = 4;
+    private readonly int RacketSpeed = 300;
 
     private RectangleShape topLeftGateBorder;
     private RectangleShape bottomLeftGateBorder;
@@ -110,17 +111,17 @@ public class PlayingField
         return (float)_random.Next(-100, 101) / 100;
     }
 
-    public void MoveBall()
+    public void MoveBall(long deltaTime)
     {
-        Ball.Position += BallMoveDirection * BallSpeed;
+        Ball.Position += BallMoveDirection * BallSpeed * deltaTime / 1000;
     }
 
-    public void MoveRacket(int racketIndex, float direction)
+    public void MoveRacket(int racketIndex, float direction, long deltaTime)
     {
         if (direction == 0)
             return;
         
-        float delta = direction * RacketSpeed;
+        float delta = direction * RacketSpeed * deltaTime / 1000;
         if (racketIndex == 1 && IsRacketWithinBorders(LeftRacket, delta))
         {
             LeftRacket.Position += new Vector2f(0, delta);

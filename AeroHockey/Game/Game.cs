@@ -1,4 +1,5 @@
-﻿using SFML.Graphics;
+﻿using System.Diagnostics;
+using SFML.Graphics;
 using SFML.System;
 
 namespace AeroHockey.Game;
@@ -17,12 +18,16 @@ public class Game
 
     private bool leftJustScored = false;
     private bool rightJustScored = false;
+
+    private Stopwatch _stopwatch;
+    private long _deltaTime;
     
     public Game(RenderWindow renderWindow)
     {
         _playingField = new PlayingField();
         _input = new Input(renderWindow);
         _output = new Output(_playingField, renderWindow);
+        _stopwatch = new Stopwatch();
     }
 
     public void StartGame()
@@ -37,6 +42,8 @@ public class Game
         _playingField.Initialize();
         
         _output.Initialize();
+        
+        _stopwatch.Start();
     }
 
     private void GameLoop()
@@ -68,6 +75,8 @@ public class Game
 
     private void Physics()
     {
+        MeasureDeltaTime();
+        
         MoveBall();
 
         MoveRackets();
@@ -75,15 +84,21 @@ public class Game
         HandleCollisions();
     }
 
-    private void MoveRackets()
+    private void MeasureDeltaTime()
     {
-        _playingField.MoveRacket(1, leftRacketDirection.X);
-        _playingField.MoveRacket(2, rightRacketDirection.X);
+        _deltaTime = _stopwatch.ElapsedMilliseconds;
+        _stopwatch.Restart();
     }
 
     private void MoveBall()
     {
-        _playingField.MoveBall();
+        _playingField.MoveBall(_deltaTime);
+    }
+
+    private void MoveRackets()
+    {
+        _playingField.MoveRacket(1, leftRacketDirection.X, _deltaTime);
+        _playingField.MoveRacket(2, rightRacketDirection.X, _deltaTime);
     }
 
     private void HandleCollisions()
@@ -196,5 +211,7 @@ public class Game
     {
         _output.UpdateScores(leftScore.ToString(), rightScore.ToString());
         _output.Display();
+        
+        Thread.Sleep(1);
     }
 }
