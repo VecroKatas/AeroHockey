@@ -202,7 +202,6 @@ public class Game
 
     private void ResetField()
     {
-        //_playingField = new PlayingField();
         _playingField.Reset();
     }
 

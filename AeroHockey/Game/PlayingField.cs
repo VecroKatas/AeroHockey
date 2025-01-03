@@ -81,7 +81,8 @@ public class PlayingField
         Ball.Position = new Vector2f(Width / 2, Height / 2);
         Ball.FillColor = new Color(200, 200, 200);
 
-        BallMoveDirection = new Vector2f(GetRandomFloat(), GetRandomFloat());
+        Vector2f randomDirection = new Vector2f(GetRandomFloat(), GetRandomFloat());
+        BallMoveDirection = randomDirection.NormalizeVector2f();
         
         ShapesToDisplay.Add(Ball);
     }
