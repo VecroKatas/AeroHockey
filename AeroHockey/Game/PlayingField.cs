@@ -111,17 +111,17 @@ public class PlayingField
         return (float)_random.Next(-100, 101) / 100;
     }
 
-    public void MoveBall(long deltaTime)
+    public void MoveBall(float deltaTime)
     {
-        Ball.Position += BallMoveDirection * BallSpeed * deltaTime / 1000;
+        Ball.Position += BallMoveDirection * BallSpeed * deltaTime;
     }
 
-    public void MoveRacket(int racketIndex, float direction, long deltaTime)
+    public void MoveRacket(int racketIndex, float direction, float deltaTime)
     {
         if (direction == 0)
             return;
         
-        float delta = direction * RacketSpeed * deltaTime / 1000;
+        float delta = direction * RacketSpeed * deltaTime;
         if (racketIndex == 1 && IsRacketWithinBorders(LeftRacket, delta))
         {
             LeftRacket.Position += new Vector2f(0, delta);

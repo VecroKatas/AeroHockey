@@ -6,6 +6,9 @@ namespace AeroHockey.Game;
 
 public class Game
 {
+    public const int TARGET_FPS = 120;
+    public const float TIME_UNTIL_NEXT_UPDATE = 1f / TARGET_FPS;
+    
     private PlayingField _playingField;
     private Input _input;
     private Output _output;
@@ -19,15 +22,19 @@ public class Game
     private bool leftJustScored = false;
     private bool rightJustScored = false;
 
-    private Stopwatch _stopwatch;
-    private long _deltaTime;
+    private Clock _clock;
+    private float _deltaTime;
+    private float _totalTimeUntilUpdate = 0f;
+    private float _previousTotalTimeElapsed = 0f;
+    private float _totalTimeElapsed = 0f;
+
+    private Action scoresJustUpdated;
     
     public Game(RenderWindow renderWindow)
     {
         _playingField = new PlayingField();
         _input = new Input(renderWindow);
         _output = new Output(_playingField, renderWindow);
-        _stopwatch = new Stopwatch();
     }
 
     public void StartGame()
@@ -42,8 +49,10 @@ public class Game
         _playingField.Initialize();
         
         _output.Initialize();
-        
-        _stopwatch.Start();
+
+        _clock = new Clock();
+
+        scoresJustUpdated += UpdateScores;
     }
 
     private void GameLoop()
@@ -51,12 +60,21 @@ public class Game
         while (GameRunning())
         {
             Input();
+
+            UpdateDeltaTime();
+        
+            if (_totalTimeUntilUpdate >= TIME_UNTIL_NEXT_UPDATE)
+            {
+                //_deltaTime = _clock.ElapsedTime.AsSeconds() - _previousTotalTimeElapsed;
+                _deltaTime = _totalTimeUntilUpdate;
+                _totalTimeUntilUpdate = 0f;
             
-            Physics();
+                Physics();
             
-            Logic();
+                Logic();
             
-            Output();
+                Output();
+            }
         }
     }
 
@@ -75,8 +93,6 @@ public class Game
 
     private void Physics()
     {
-        MeasureDeltaTime();
-        
         MoveBall();
 
         MoveRackets();
@@ -84,10 +100,14 @@ public class Game
         HandleCollisions();
     }
 
-    private void MeasureDeltaTime()
+    private void UpdateDeltaTime()
     {
-        _deltaTime = _stopwatch.ElapsedMilliseconds;
-        _stopwatch.Restart();
+        _totalTimeElapsed = _clock.ElapsedTime.AsSeconds();
+        float delta = _totalTimeElapsed - _previousTotalTimeElapsed;
+        _previousTotalTimeElapsed = _totalTimeElapsed;
+
+        _totalTimeUntilUpdate += delta;
+        
     }
 
     private void MoveBall()
@@ -120,6 +140,8 @@ public class Game
 
             if (ballPosition.Y - ball.Radius < 0 || ballPosition.Y + ball.Radius > PlayingField.Height) // Top Bottom borders
                 direction.Y = -direction.Y;
+
+            direction = HandleBorderCollision(ball, direction);
 
             direction = HandleRacketCollision(leftRacket, ball, direction);
             direction = HandleRacketCollision(rightRacket, ball, direction);
@@ -162,6 +184,21 @@ public class Game
     {
         return ball.Position.Y > _playingField.TopGateBorder && ball.Position.Y < _playingField.BottomGateBorder;
     }
+    
+    private Vector2f HandleBorderCollision(CircleShape ball, Vector2f direction)
+    {
+        if (ball.Position.Y - ball.Radius < 0)
+            direction.Y = MathF.Abs(direction.Y);
+        else if (ball.Position.Y + ball.Radius > PlayingField.Height)
+            direction.Y = -MathF.Abs(direction.Y);
+        
+        if (IsLeftBorderCollision(ball))
+            direction.X = MathF.Abs(direction.X);
+        else if (IsRightBorderCollision(ball))
+            direction.X = -MathF.Abs(direction.X);
+
+        return direction;
+    }
 
     private Vector2f HandleRacketCollision(RectangleShape racket, CircleShape ball, Vector2f direction)
     {
@@ -197,6 +234,8 @@ public class Game
         {
             rightScore++;
             rightJustScored = false;
+            
+            scoresJustUpdated.Invoke();
 
             ResetField();
         }
@@ -207,11 +246,15 @@ public class Game
         _playingField.Reset();
     }
 
-    private void Output()
+    private void UpdateScores()
     {
         _output.UpdateScores(leftScore.ToString(), rightScore.ToString());
+    }
+
+    private void Output()
+    {
         _output.Display();
         
-        Thread.Sleep(1);
+        //Thread.Sleep(1);
     }
 }

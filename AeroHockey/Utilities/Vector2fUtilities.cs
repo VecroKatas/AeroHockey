@@ -2,7 +2,7 @@
 
 namespace AeroHockey;
 
-public static class Utilities
+public static class Vector2fUtilities
 {
     public static Vector2f NormalizeVector2f(this Vector2f vector)
     {
